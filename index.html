@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mental Wellness Maze</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      color: #333;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #007BFF;
+      background-color: #ffffff;
+    }
+    .question {
+      font-size: 1.2em;
+      margin: 20px auto;
+    }
+    .result {
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin: 10px;
+    }
+    .controls button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .controls button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mental Wellness Maze</h1>
+  <div class="question" id="question">Loading question...</div>
+  <canvas id="mazeCanvas" width="300" height="300"></canvas>
+  <div class="controls">
+    <button onclick="movePlayer('up')">Up</button>
+    <div style="display: flex; justify-content: center;">
+      <button onclick="movePlayer('left')">Left</button>
+      <button onclick="movePlayer('right')">Right</button>
+    </div>
+    <button onclick="movePlayer('down')">Down</button>
+  </div>
+  <div id="result" class="result" style="display:none;">
+    <p id="result-text"></p>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('mazeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const player = {
+      x: 150,
+      y: 50,
+      size: 20,
+      color: 'blue'
+    };
+
+    const questions = [
+      {
+        text: "You feel overwhelmed by your homework. What do you do?",
+        answers: [
+          { text: "Ask for help", x: 50, y: 250, score: 3 },
+          { text: "Ignore it", x: 150, y: 250, score: 1 },
+          { text: "Organize tasks", x: 250, y: 250, score: 5 }
+        ]
+      },
+      {
+        text: "A friend is feeling sad but doesn’t want to talk. What do you do?",
+        answers: [
+          { text: "Give them space", x: 50, y: 250, score: 5 },
+          { text: "Avoid them", x: 150, y: 250, score: 1 },
+          { text: "Push them to talk", x: 250, y: 250, score: 3 }
+        ]
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let totalScore = 0;
+    const maxScore = questions.reduce((sum, question) => sum + Math.max(...question.answers.map(a => a.score)), 0);
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+    }
+
+    function drawAnswers() {
+      const question = questions[currentQuestionIndex];
+      question.answers.forEach(answer => {
+        ctx.fillStyle = 'green';
+        ctx.fillRect(answer.x - 40, answer.y - 20, 120, 40);
+        ctx.fillStyle = 'white';
+        ctx.font = '14px Arial';
+        ctx.textAlign = "center";
+        ctx.fillText(answer.text, answer.x + 20, answer.y);
+      });
+    }
+
+    function drawMaze() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      drawAnswers();
+    }
+
+    function updateQuestion() {
+      document.getElementById('question').innerText = questions[currentQuestionIndex].text;
+    }
+
+    function checkAnswer() {
+      const question = questions[currentQuestionIndex];
+      const selectedAnswer = question.answers.find(answer =>
+        player.x >= answer.x - 40 &&
+        player.x <= answer.x + 80 &&
+        player.y >= answer.y - 20 &&
+        player.y <= answer.y + 20
+      );
+
+      if (selectedAnswer) {
+        alert(`You chose: ${selectedAnswer.text}`);
+        totalScore += selectedAnswer.score;
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          player.x = 150;
+          player.y = 50;
+          updateQuestion();
+        } else {
+          showResult();
+        }
+      }
+    }
+
+    function movePlayer(direction) {
+      let nextX = player.x;
+      let nextY = player.y;
+
+      switch (direction) {
+        case 'up':
+          nextY -= 10;
+          break;
+        case 'down':
+          nextY += 10;
+          break;
+        case 'left':
+          nextX -= 10;
+          break;
+        case 'right':
+          nextX += 10;
+          break;
+      }
+
+      if (nextX >= 0 && nextX + player.size <= canvas.width && nextY >= 0 && nextY + player.size <= canvas.height) {
+        player.x = nextX;
+        player.y = nextY;
+        drawMaze();
+        checkAnswer();
+      }
+    }
+
+    function showResult() {
+      canvas.style.display = 'none';
+      document.getElementById('question').style.display = 'none';
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'block';
+
+      const resultText = document.getElementById('result-text');
+      resultText.innerText = `Your total score is ${totalScore} out of ${maxScore}! Great job navigating the maze!`;
+    }
+
+    function restartGame() {
+      player.x = 150;
+      player.y = 50;
+      currentQuestionIndex = 0;
+      totalScore = 0;
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('question').style.display = 'block';
+      canvas.style.display = 'block';
+      updateQuestion();
+      drawMaze();
+    }
+
+    updateQuestion();
+    drawMaze();
+  </script>
+</body>
+</html>
