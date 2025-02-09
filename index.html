@@ -175,6 +175,23 @@
       }
     }
 
+    function handleKeyPress(event) {
+      switch (event.key) {
+        case 'ArrowUp':
+          movePlayer('up');
+          break;
+        case 'ArrowDown':
+          movePlayer('down');
+          break;
+        case 'ArrowLeft':
+          movePlayer('left');
+          break;
+        case 'ArrowRight':
+          movePlayer('right');
+          break;
+      }
+    }
+
     function showResult() {
       canvas.style.display = 'none';
       document.getElementById('question').style.display = 'none';
@@ -197,6 +214,7 @@
       drawMaze();
     }
 
+    document.addEventListener('keydown', handleKeyPress);
     updateQuestion();
     drawMaze();
   </script>
